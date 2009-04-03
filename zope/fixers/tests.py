@@ -57,10 +57,8 @@ class Bar:
 
 class FixerTest(unittest.TestCase):
     
-    def test_test(self):
-        #import pdb;pdb.set_trace()
+    def test_fixer(self):
         tool = RefactoringTool(['zope.fixers.fix_implements'])
         refactored = str(tool.refactor_string(example, 'zope.fixer.test'))
-
-        assert refactored == target
+        self.assertEquals(refactored, target)
         

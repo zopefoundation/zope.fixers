@@ -1,3 +1,21 @@
+##############################################################################
+#
+# Copyright (c) 2009 Zope Corporation and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
+"""Setup for zope.fixers package
+
+$Id$
+"""
+
 from setuptools import setup, find_packages
 import os
 
@@ -16,7 +34,7 @@ setup(name='zope.fixers',
       keywords='2to3 python3 zope',
       author='Lennart Regebro',
       author_email='regebro@gmail.com',
-      url='',
+      url='http://svn.zope.org/zope.fixers/',
       license='ZPL',
       packages=find_packages(exclude=['ez_setup']),
       namespace_packages=['zope'],
@@ -24,7 +42,6 @@ setup(name='zope.fixers',
       zip_safe=True,
       install_requires=[
           'setuptools',
-          # -*- Extra requirements: -*-
       ],
       entry_points="""
       # -*- Entry points: -*-

@@ -1,0 +1,9 @@
+CHANGES
+*******
+
+==================
+1.0.0 (unreleased)
+==================
+
+Initial release. Includes the implements fix to change implements(IFoo) 
+class body call to @implementor(IFoo) class decorator.
