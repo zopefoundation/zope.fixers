@@ -55,9 +55,13 @@ class FixImplements(BaseFix):
         return not ('zope' in module and 'interface' in module)
 
     def compile_pattern(self):
-        # Compile the import pattern:
+        # Compile the import pattern.
         self.named_import_pattern = PatternCompiler().compile_pattern(self.IMPORT_PATTERN)
-        # Compile the basic class/implements matches:
+        
+    def start_tree(self, tree, filename):
+        # Compile the basic class/implements matches. This is done per tree,
+        # as further matches (based on what imports there are) also are done
+        # per tree.
         self.class_patterns = []
         self.implements_patterns = []
         self._add_pattern("'implements'")
