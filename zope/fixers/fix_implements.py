@@ -26,38 +26,52 @@ helper = dict([(b,a) for (a,b) in syms.__dict__.items()])
 
 class FixImplements(BaseFix):
 
-    NAMED_IMPORT_PATTERN = """
+    IMPORT_PATTERN = """
     import_from< 'from' dotted_name< 'zope' '.' 'interface' > 'import' import_as_names< any* (name='implements') any* > >
     |
     import_from< 'from' dotted_name< 'zope' '.' 'interface' > 'import' name='implements' any* >
-    """
-    
-    RENAMED_IMPORT_PATTERN = """
-    import_from< 'from' dotted_name< 'zope' '.' 'interface' > 'import' import_as_name< name='implements' 'as' rename='renamed' any*> >
+    |
+    import_from< 'from' dotted_name< 'zope' > 'import' name='interface' any* >
+    |
+    import_from< 'from' dotted_name< 'zope' '.' 'interface' > 'import' import_as_name< name='implements' 'as' rename=(any) any*> >
+    |
+    import_from< 'from' dotted_name< 'zope' > 'import' import_as_name< name='interface' 'as' rename=(any) any*> >
+    |
+    import_from< 'from' 'zope' 'import' import_as_name< 'interface' 'as' interface_rename=(any) > >
     """
     
     CLASS_PATTERN = """
-    classdef< 'class' any* ':' suite< any* simple_stmt< power< statement='%s' trailer < '(' interface=any ')' > any* > any* > any* > >
+    classdef< 'class' any* ':' suite< any* simple_stmt< power< statement=(%s) trailer < '(' interface=any ')' > any* > any* > any* > >
     """
 
     IMPLEMENTS_PATTERN = """
-    simple_stmt< power< old_statement='%s' trailer < '(' any* ')' > > any* >
+    simple_stmt< power< old_statement=(%s) trailer < '(' any* ')' > > any* >
     """
-    #classdef< 'class' 'Foo' ':' suite<  simple_stmt< power< 'implements' trailer< '(' 'IFoo' ')' > > '\n' > '' > >
+
+    TEST_PATTERN = """
+    import_name< 'import' dotted_name< interface_full=('zope' '.' 'interface') > >
+    """
     
     fixups = []
     
+    def should_skip(self, node):
+        # TODO Could possibly be faster is we used a pattern. Worth trying.
+        module = str(node)
+        return not ('zope' in module and 'interface' in module)
+
     def compile_pattern(self):
         """Compiles self.PATTERN into self.pattern.
 
         Subclass may override if it doesn't want to use
         self.{pattern,PATTERN} in .match().
         """
-        self.named_import_pattern = PatternCompiler().compile_pattern(self.NAMED_IMPORT_PATTERN)
-        self.renamed_import_pattern = PatternCompiler().compile_pattern(self.RENAMED_IMPORT_PATTERN)
+        self.named_import_pattern = PatternCompiler().compile_pattern(self.IMPORT_PATTERN)
+        self.test_pattern = PatternCompiler().compile_pattern(self.TEST_PATTERN)
             
     def start_tree(self, tree, filename):
-        self.matches = ['implements']
+        self.matches = ["'implements'",
+                        "'interface' trailer< '.' 'implements' >",
+                        ]
         super(FixImplements, self).start_tree(tree, filename)
         
     def match(self, node):
@@ -65,8 +79,9 @@ class FixImplements(BaseFix):
         results = {"node": node}
         if self.named_import_pattern.match(node, results):
             return results
-        if self.renamed_import_pattern.match(node, results):
+        if self.test_pattern.match(node, results):
             return results
+
         for name in self.matches:
             pattern = PatternCompiler().compile_pattern(self.CLASS_PATTERN % name)
             if pattern.match(node, results):
@@ -80,22 +95,45 @@ class FixImplements(BaseFix):
             # This matched an import statement. Fix that up:
             name = results["name"]
             name.replace(Name("implementor", prefix=name.get_prefix()))
-            if 'rename' in results:
-                # The import statement use import as
-                self.matches.append(results['rename'].value)
+        if 'rename' in results:
+            # The import statement use import as
+            self.matches.append("'%s'" % results['rename'].value)
+        if 'interface_rename' in results:
+            self.matches.append("'%s' trailer< '.' 'implements' > " % results['interface_rename'].value)
+        if 'interface_full' in results:
+            self.matches.append("'zope' trailer< '.' 'interface' > trailer< '.' 'implements' >")
         if 'statement' in results:
-            # This matched a class that has an impements(IFoo) statement.
-            # Stick a class decorator first.
-            statement = results['statement'].value
+            # This matched a class that has an implements(IFoo) statement.
+            # We must convert that statement to a class decorator
+            # and put it before the class definition.
+            
+            statement = results['statement']
             interface = results['interface'].value
-            if statement == 'implements':
-                statement = 'implementor'
+            
+            if not isinstance(statement, list):
+                statement = [statement]
+            # Make a copy for insertion before the class:
+            statement = [x.clone() for x in statement]
+            # Get rid of leading whitespace:
+            statement[0].prefix = ''
+            # Rename implements to implementor:
+            if statement[-1].children:
+                implements = statement[-1].children[-1]
             else:
-                statement = results['statement'].value
-            decorator = Node(syms.decorator, [Leaf(50, '@'), Leaf(1, statement), 
+                implements = statement[-1]
+            if implements.value == 'implements':
+                implements.value = 'implementor'
+            
+            # Create the decorator:
+            decorator = Node(syms.decorator, [Leaf(50, '@'), ] + statement + [ 
                                               Leaf(7, '('), Leaf(1, interface), 
                                               Leaf(8, ')'), Leaf(4, '\n')])
+            # And stick it in before the class defintion:
+            prefix = node.get_prefix()
+            node.set_prefix('')
             node.insert_child(0, decorator)
+            node.set_prefix(prefix)
+            
         if 'old_statement' in results:
             # This matched an implements statement. We'll remove it.
             self.fixups.append(node)
