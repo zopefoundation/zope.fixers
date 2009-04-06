@@ -38,8 +38,6 @@ class FixImplements(BaseFix):
     import_from< 'from' dotted_name< 'zope' > 'import' import_as_name< name='interface' 'as' rename=(any) any*> >
     |
     import_from< 'from' 'zope' 'import' import_as_name< 'interface' 'as' interface_rename=(any) > >
-    |
-    import_name< 'import' dotted_name< interface_full=('zope' '.' 'interface') > >
     """
     
     CLASS_PATTERN = """
@@ -58,21 +56,20 @@ class FixImplements(BaseFix):
         return not ('zope' in module and 'interface' in module)
 
     def compile_pattern(self):
+        # Compile the import pattern:
         self.named_import_pattern = PatternCompiler().compile_pattern(self.IMPORT_PATTERN)
+        # Compile the basic class/implements matches:
+        self.class_patterns = []
+        self.implements_patterns = []
+        self._add_pattern("'implements'")
+        self._add_pattern("'interface' trailer< '.' 'implements' >")
+        self._add_pattern("'zope' trailer< '.' 'interface' > trailer< '.' 'implements' >")
     
     def _add_pattern(self, match):
             self.class_patterns.append(PatternCompiler().compile_pattern(
                 self.CLASS_PATTERN % match))
             self.implements_patterns.append(PatternCompiler().compile_pattern(
                 self.IMPLEMENTS_PATTERN % match))
-        
-    def start_tree(self, tree, filename):
-        self.class_patterns = []
-        self.implements_patterns = []
-        for match in ["'implements'",
-                      "'interface' trailer< '.' 'implements' >"]:
-            self._add_pattern(match)
-        super(FixImplements, self).start_tree(tree, filename)
         
     def match(self, node):
         # Matches up the imports
@@ -100,8 +97,6 @@ class FixImplements(BaseFix):
             self._add_pattern("'%s'" % results['rename'].value)
         if 'interface_rename' in results:
             self._add_pattern("'%s' trailer< '.' 'implements' > " % results['interface_rename'].value)
-        if 'interface_full' in results:
-            self._add_pattern("'zope' trailer< '.' 'interface' > trailer< '.' 'implements' >")
         if 'statement' in results:
             # This matched a class that has an implements(IFoo) statement.
             # We must convert that statement to a class decorator
