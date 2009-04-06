@@ -106,8 +106,6 @@ class FixImplements(BaseFix):
             # and put it before the class definition.
             
             statement = results['statement']
-            interface = results['interface'].value
-            
             if not isinstance(statement, list):
                 statement = [statement]
             # Make a copy for insertion before the class:
@@ -122,10 +120,39 @@ class FixImplements(BaseFix):
             if implements.value == 'implements':
                 implements.value = 'implementor'
             
+            interface = results['interface']
+            if not isinstance(interface, list):
+                interface = [interface]
+            interface = [x.clone() for x in interface]
+
+            # Find the current indent, and strip any previous whitespace:
+            indent = []
+            previous = []
+            if node.parent.type == syms.suite:
+                remove = []
+                for child in node.parent.children:
+                    if str(child).strip(): # Not whitespace
+                        break
+                    # Whitespace
+                    indent += [child.clone()]
+                    previous += [child.clone()]
+                    if child.value == '\n':
+                        # The decorator should go at the nearest line before
+                        # the class statement:
+                        indent = []
+                    # We should remove these, but not until after we have
+                    # stopped looping over the node, or everything gets
+                    # confused.
+                    remove.append(child)
+                # We are finished looping: Remove the whitespace:
+                for child in remove:
+                    child.remove()
+            
             # Create the decorator:
-            decorator = Node(syms.decorator, [Leaf(50, '@'), ] + statement + [ 
-                                              Leaf(7, '('), Leaf(1, interface), 
-                                              Leaf(8, ')'), Leaf(4, '\n')])
+            decorator = Node(syms.decorator, previous + [Leaf(50, '@'),] + 
+                             statement + [Leaf(7, '(')] + interface + 
+                             [ Leaf(8, ')'), Leaf(4, '\n') ] + indent)
+                
             # And stick it in before the class defintion:
             prefix = node.get_prefix()
             node.set_prefix('')
@@ -138,4 +165,10 @@ class FixImplements(BaseFix):
     
     def finish_tree(self, tree, filename):
         for node in self.fixups:
+            parent = node.parent
             node.remove()
+            if not str(parent).strip():
+                # This is an empty class. Stick in a pass
+                parent.insert_child(2, Leaf(0, 'pass'))
+                parent.insert_child(3, Leaf(0, '\n'))
+                
