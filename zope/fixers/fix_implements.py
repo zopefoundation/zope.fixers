@@ -59,11 +59,19 @@ class FixImplements(BaseFix):
 
     def compile_pattern(self):
         self.named_import_pattern = PatternCompiler().compile_pattern(self.IMPORT_PATTERN)
-            
+    
+    def _add_pattern(self, match):
+            self.class_patterns.append(PatternCompiler().compile_pattern(
+                self.CLASS_PATTERN % match))
+            self.implements_patterns.append(PatternCompiler().compile_pattern(
+                self.IMPLEMENTS_PATTERN % match))
+        
     def start_tree(self, tree, filename):
-        self.matches = ["'implements'",
-                        "'interface' trailer< '.' 'implements' >",
-                        ]
+        self.class_patterns = []
+        self.implements_patterns = []
+        for match in ["'implements'",
+                      "'interface' trailer< '.' 'implements' >"]:
+            self._add_pattern(match)
         super(FixImplements, self).start_tree(tree, filename)
         
     def match(self, node):
@@ -72,14 +80,13 @@ class FixImplements(BaseFix):
         if self.named_import_pattern.match(node, results):
             return results
 
-        for name in self.matches:
-            # Now match clases on all import variants found:
-            pattern = PatternCompiler().compile_pattern(self.CLASS_PATTERN % name)
+        # Now match classes on all import variants found:
+        for pattern in self.class_patterns:
             if pattern.match(node, results):
                 return results
 
-            # And lastly on all actual calls to implements:
-            pattern = PatternCompiler().compile_pattern(self.IMPLEMENTS_PATTERN % name)
+        # And lastly on all actual calls to implements:
+        for pattern in self.implements_patterns:
             if pattern.match(node, results):
                 return results
                 
@@ -90,11 +97,11 @@ class FixImplements(BaseFix):
             name.replace(Name("implementor", prefix=name.get_prefix()))
         if 'rename' in results:
             # The import statement use import as
-            self.matches.append("'%s'" % results['rename'].value)
+            self._add_pattern("'%s'" % results['rename'].value)
         if 'interface_rename' in results:
-            self.matches.append("'%s' trailer< '.' 'implements' > " % results['interface_rename'].value)
+            self._add_pattern("'%s' trailer< '.' 'implements' > " % results['interface_rename'].value)
         if 'interface_full' in results:
-            self.matches.append("'zope' trailer< '.' 'interface' > trailer< '.' 'implements' >")
+            self._add_pattern("'zope' trailer< '.' 'interface' > trailer< '.' 'implements' >")
         if 'statement' in results:
             # This matched a class that has an implements(IFoo) statement.
             # We must convert that statement to a class decorator
