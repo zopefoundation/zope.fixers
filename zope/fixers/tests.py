@@ -205,6 +205,9 @@ def forceindent():
     class Foo:
         zope.interface.implements(IFoo)
         
+    class Bar:
+        zope.interface.implements(IFoo)
+        
 """
 
 indented_class_target = """
@@ -216,6 +219,10 @@ class IFoo(Interface):
 def forceindent():
     @zope.interface.implementor(IFoo)
     class Foo:
+        pass
+        
+    @zope.interface.implementor(IFoo)
+    class Bar:
         pass
         
 """

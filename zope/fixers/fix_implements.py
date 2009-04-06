@@ -125,39 +125,25 @@ class FixImplements(BaseFix):
                 interface = [interface]
             interface = [x.clone() for x in interface]
 
-            # Find the current indent, and strip any previous whitespace:
-            indent = []
-            previous = []
-            if node.parent.type == syms.suite:
-                remove = []
-                for child in node.parent.children:
-                    if str(child).strip(): # Not whitespace
-                        break
-                    # Whitespace
-                    indent += [child.clone()]
-                    previous += [child.clone()]
-                    if child.value == '\n':
-                        # The decorator should go at the nearest line before
-                        # the class statement:
-                        indent = []
-                    # We should remove these, but not until after we have
-                    # stopped looping over the node, or everything gets
-                    # confused.
-                    remove.append(child)
-                # We are finished looping: Remove the whitespace:
-                for child in remove:
-                    child.remove()
-            
             # Create the decorator:
-            decorator = Node(syms.decorator, previous + [Leaf(50, '@'),] + 
-                             statement + [Leaf(7, '(')] + interface + 
-                             [ Leaf(8, ')'), Leaf(4, '\n') ] + indent)
+            decorator = Node(syms.decorator, [Leaf(50, '@'),] + statement +
+                             [Leaf(7, '(')] + interface + [Leaf(8, ')')])
                 
             # And stick it in before the class defintion:
             prefix = node.get_prefix()
-            node.set_prefix('')
+            if prefix and prefix[0] == '\n':
+                decorator.set_prefix(prefix)
+            elif prefix:
+                node.set_prefix('\n' + prefix)
+            else:
+                # Find previous node:
+                previous = str(node.get_prev_sibling())
+                if '\n' in previous:
+                    prefix = previous[previous.rfind('\n'):]
+                else:
+                    prefix = '\n' + previous
+                node.set_prefix(prefix)                
             node.insert_child(0, decorator)
-            node.set_prefix(prefix)
             
         if 'old_statement' in results:
             # This matched an implements statement. We'll remove it.
