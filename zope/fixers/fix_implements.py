@@ -51,7 +51,6 @@ class FixImplements(BaseFix):
     fixups = []
     
     def should_skip(self, node):
-        # TODO Could possibly be faster is we used a pattern. Worth trying.
         module = str(node)
         return not ('zope' in module and 'interface' in module)
 
