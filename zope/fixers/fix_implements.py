@@ -38,6 +38,8 @@ class FixImplements(BaseFix):
     import_from< 'from' dotted_name< 'zope' > 'import' import_as_name< name='interface' 'as' rename=(any) any*> >
     |
     import_from< 'from' 'zope' 'import' import_as_name< 'interface' 'as' interface_rename=(any) > >
+    |
+    import_name< 'import' dotted_name< interface_full=('zope' '.' 'interface') > >
     """
     
     CLASS_PATTERN = """
@@ -48,10 +50,6 @@ class FixImplements(BaseFix):
     simple_stmt< power< old_statement=(%s) trailer < '(' any* ')' > > any* >
     """
 
-    TEST_PATTERN = """
-    import_name< 'import' dotted_name< interface_full=('zope' '.' 'interface') > >
-    """
-    
     fixups = []
     
     def should_skip(self, node):
@@ -60,13 +58,7 @@ class FixImplements(BaseFix):
         return not ('zope' in module and 'interface' in module)
 
     def compile_pattern(self):
-        """Compiles self.PATTERN into self.pattern.
-
-        Subclass may override if it doesn't want to use
-        self.{pattern,PATTERN} in .match().
-        """
         self.named_import_pattern = PatternCompiler().compile_pattern(self.IMPORT_PATTERN)
-        self.test_pattern = PatternCompiler().compile_pattern(self.TEST_PATTERN)
             
     def start_tree(self, tree, filename):
         self.matches = ["'implements'",
@@ -79,13 +71,14 @@ class FixImplements(BaseFix):
         results = {"node": node}
         if self.named_import_pattern.match(node, results):
             return results
-        if self.test_pattern.match(node, results):
-            return results
 
         for name in self.matches:
+            # Now match clases on all import variants found:
             pattern = PatternCompiler().compile_pattern(self.CLASS_PATTERN % name)
             if pattern.match(node, results):
                 return results
+
+            # And lastly on all actual calls to implements:
             pattern = PatternCompiler().compile_pattern(self.IMPLEMENTS_PATTERN % name)
             if pattern.match(node, results):
                 return results
