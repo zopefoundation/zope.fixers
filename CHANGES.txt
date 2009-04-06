@@ -6,4 +6,4 @@ CHANGES
 ==================
 
 Initial release. Includes the implements fix to change implements(IFoo) 
-class body call to @implementor(IFoo) class decorator.
+class body call to @implementer(IFoo) class decorator.

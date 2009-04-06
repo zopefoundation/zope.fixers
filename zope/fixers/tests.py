@@ -12,12 +12,12 @@ from zope.interface import implements as renamed
 """
 
 imports_target = """
-from zope.interface import Interface, implementor, providedBy
-from zope.interface import providedBy, implementor, Interface
-from zope.interface import providedBy, implementor
-from zope.interface import implementor, Interface
-from zope.interface import implementor
-from zope.interface import implementor as renamed
+from zope.interface import Interface, implementer, providedBy
+from zope.interface import providedBy, implementer, Interface
+from zope.interface import providedBy, implementer
+from zope.interface import implementer, Interface
+from zope.interface import implementer
+from zope.interface import implementer as renamed
 """
 
 # Test a simple case.
@@ -34,12 +34,12 @@ class Foo:
 """
 
 simple_target = """
-from zope.interface import implementor
+from zope.interface import implementer
 
 class IFoo(Interface):
     pass
 
-@implementor(IFoo)
+@implementer(IFoo)
 class Foo:
     "An IFoo class"
 """
@@ -61,7 +61,7 @@ class Foo:
 """
 
 multi_target = """
-from zope.interface import implementor
+from zope.interface import implementer
 
 class IFoo(Interface):
     pass
@@ -69,7 +69,7 @@ class IFoo(Interface):
 class IBar(Interface):
     pass
 
-@implementor(IFoo, IBar)
+@implementer(IFoo, IBar)
 class Foo:
     "An IFoo class"
 """
@@ -88,7 +88,7 @@ class Bar:
 """
 
 renamed_target = """
-from zope.interface import implementor as renamed
+from zope.interface import implementer as renamed
 
 class IBar(Interface):
     pass
@@ -117,7 +117,7 @@ from zope import interface
 class IFoo(Interface):
     pass
 
-@interface.implementor(IFoo)
+@interface.implementer(IFoo)
 class Foo:
     "An IFoo class"
 """
@@ -141,7 +141,7 @@ from zope import interface as zopeinterface
 class IFoo(Interface):
     pass
 
-@zopeinterface.implementor(IFoo)
+@zopeinterface.implementer(IFoo)
 class Foo:
     "An IFoo class"
 """
@@ -165,7 +165,7 @@ import zope.interface
 class IFoo(Interface):
     pass
 
-@zope.interface.implementor(IFoo)
+@zope.interface.implementer(IFoo)
 class Foo:
     "An IFoo class"
 """
@@ -188,7 +188,7 @@ import zope.interface
 class IFoo(Interface):
     pass
 
-@zope.interface.implementor(IFoo)
+@zope.interface.implementer(IFoo)
 class Foo:
     pass
 
@@ -217,11 +217,11 @@ class IFoo(Interface):
     pass
 
 def forceindent():
-    @zope.interface.implementor(IFoo)
+    @zope.interface.implementer(IFoo)
     class Foo:
         pass
         
-    @zope.interface.implementor(IFoo)
+    @zope.interface.implementer(IFoo)
     class Bar:
         pass
         

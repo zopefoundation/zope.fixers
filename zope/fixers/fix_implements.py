@@ -11,7 +11,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Fixer for implements(IX) -> @implementor(IX).
+"""Fixer for implements(IX) -> @implementer(IX).
 
 $Id$
 """
@@ -94,7 +94,7 @@ class FixImplements(BaseFix):
         if 'name' in results:
             # This matched an import statement. Fix that up:
             name = results["name"]
-            name.replace(Name("implementor", prefix=name.get_prefix()))
+            name.replace(Name("implementer", prefix=name.get_prefix()))
         if 'rename' in results:
             # The import statement use import as
             self._add_pattern("'%s'" % results['rename'].value)
@@ -112,13 +112,13 @@ class FixImplements(BaseFix):
             statement = [x.clone() for x in statement]
             # Get rid of leading whitespace:
             statement[0].prefix = ''
-            # Rename implements to implementor:
+            # Rename implements to implementer:
             if statement[-1].children:
                 implements = statement[-1].children[-1]
             else:
                 implements = statement[-1]
             if implements.value == 'implements':
-                implements.value = 'implementor'
+                implements.value = 'implementer'
             
             interface = results['interface']
             if not isinstance(interface, list):
