@@ -131,18 +131,25 @@ class Function2DecoratorBase(BaseFix):
                 
             # Take the current class constructor prefix, and stick it into
             # the decorator, to set the decorators indentation.
-            prefix = node.get_prefix()
-            decorator.set_prefix(prefix)
+            #import pdb;pdb.set_trace()
+            nodeprefix = node.get_prefix()
+            decorator.set_prefix(nodeprefix)
+            # Preserve only the indent:
+            if '\n' in nodeprefix:
+                nodeprefix = nodeprefix[nodeprefix.rfind('\n')+1:]
             
             # Then find the last line of the previous node and use that as
             # indentation, and add that to the class constructors prefix.
-            prefix = str(node.get_prev_sibling())
-            if not prefix:
-                prefix = node.get_prefix()
-            elif '\n' in prefix:
-                prefix = prefix[prefix.rfind('\n')+1:] + node.get_prefix()
+                
+            previous = node.get_prev_sibling()
+            if previous is None:
+                prefix = ''
             else:
-                prefix = prefix + node.get_prefix()
+                prefix = str(previous)
+            if '\n' in prefix:
+                prefix = prefix[prefix.rfind('\n')+1:]
+            prefix = prefix + nodeprefix
+                
             if not prefix or prefix[0] != '\n':
                 prefix = '\n' + prefix
             node.set_prefix(prefix)
