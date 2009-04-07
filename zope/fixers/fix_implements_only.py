@@ -18,6 +18,6 @@ $Id$
 
 from .base import Function2DecoratorBase
 
-class FixImplements(Function2DecoratorBase):
-    FUNCTION_NAME = 'implements'
-    DECORATOR_NAME = 'implementer'
+class FixImplementsOnly(Function2DecoratorBase):
+    FUNCTION_NAME = 'implementsOnly'
+    DECORATOR_NAME = 'implementer_only'

@@ -307,6 +307,11 @@ class FixerTest(unittest.TestCase):
             msg = msg.replace('\t', '------->')
             msg = ("Test failed at character %i" % i) + msg
             self.fail(msg)
+            
+class ImplementsFixerTest(FixerTest):
+    
+    def setUp(self):
+        self.tool = RefactoringTool(['zope.fixers.fix_implements'])
         
     def test_imports(self):
         self._test(imports_source, imports_target)
@@ -337,3 +342,35 @@ class FixerTest(unittest.TestCase):
 
     def test_edge_cases(self):
         self._test(edge_cases_source, edge_cases_target)
+
+ 
+implements_only_source = """
+from zope.interface import implementsOnly
+
+class IFoo(Interface):
+    pass
+
+class Foo:
+    "An IFoo class"
+    
+    implementsOnly(IFoo)
+"""
+
+implements_only_target = """
+from zope.interface import implementer_only
+
+class IFoo(Interface):
+    pass
+
+@implementer_only(IFoo)
+class Foo:
+    "An IFoo class"
+"""
+
+class ImplementsOnlyFixerTest(FixerTest):
+    
+    def setUp(self):
+        self.tool = RefactoringTool(['zope.fixers.fix_implements_only'])
+
+    def test_implements_only(self):
+        self._test(implements_only_source, implements_only_target)
