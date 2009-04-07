@@ -244,6 +244,15 @@ class Test(unittest.TestCase):
         class myint(int):
             implements(I2)
 
+    def test_implementedBy(self):
+        class I2(I1): pass
+
+        class C1(Odd):
+          implements(I2)
+
+        class C2(C1):
+          implements(I3)
+
 """
 
 edge_cases_target = """
@@ -262,6 +271,17 @@ class Test(unittest.TestCase):
         @implementer(I2)
         class myint(int):
             pass
+
+    def test_implementedBy(self):
+        class I2(I1): pass
+
+        @implementer(I2)
+        class C1(Odd):
+          pass
+
+        @implementer(I3)
+        class C2(C1):
+          pass
 
 """
 

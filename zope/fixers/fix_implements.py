@@ -131,15 +131,21 @@ class FixImplements(BaseFix):
                 
             # Take the current class constructor prefix, and stick it into
             # the decorator, to set the decorators indentation.
+            #import pdb;pdb.set_trace()
             prefix = node.get_prefix()
             decorator.set_prefix(prefix)
             
             # Then find the last line of the previous node and use that as
             # indentation, and add that to the class constructors prefix.
             prefix = str(node.get_prev_sibling())
-            if '\n' in prefix:
-                prefix = prefix[prefix.rfind('\n')+1:]
-            prefix = '\n' + prefix + node.get_prefix()
+            if not prefix:
+                prefix = node.get_prefix()
+            elif '\n' in prefix:
+                prefix = prefix[prefix.rfind('\n')+1:] + node.get_prefix()
+            else:
+                prefix = prefix + node.get_prefix()
+            if not prefix or prefix[0] != '\n':
+                prefix = '\n' + prefix
             node.set_prefix(prefix)
             node.insert_child(0, decorator)
             
