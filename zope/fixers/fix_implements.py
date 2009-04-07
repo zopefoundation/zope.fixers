@@ -129,20 +129,18 @@ class FixImplements(BaseFix):
             decorator = Node(syms.decorator, [Leaf(50, '@'),] + statement +
                              [Leaf(7, '(')] + interface + [Leaf(8, ')')])
                 
-            # And stick it in before the class defintion:
+            # Take the current class constructor prefix, and stick it into
+            # the decorator, to set the decorators indentation.
             prefix = node.get_prefix()
-            if prefix and prefix[0] == '\n':
-                decorator.set_prefix(prefix)
-            elif prefix:
-                node.set_prefix('\n' + prefix)
-            else:
-                # Find previous node:
-                previous = str(node.get_prev_sibling())
-                if '\n' in previous:
-                    prefix = previous[previous.rfind('\n'):]
-                else:
-                    prefix = '\n' + previous
-                node.set_prefix(prefix)                
+            decorator.set_prefix(prefix)
+            
+            # Then find the last line of the previous node and use that as
+            # indentation, and add that to the class constructors prefix.
+            prefix = str(node.get_prev_sibling())
+            if '\n' in prefix:
+                prefix = prefix[prefix.rfind('\n')+1:]
+            prefix = '\n' + prefix + node.get_prefix()
+            node.set_prefix(prefix)
             node.insert_child(0, decorator)
             
         if 'old_statement' in results:

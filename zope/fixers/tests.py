@@ -226,6 +226,45 @@ def forceindent():
         pass
         
 """
+
+# Edge cases I've encountered.
+edge_cases_source = """
+class Test(unittest.TestCase):
+
+    # Note that most of the tests are in the doc strings of the
+    # declarations module.
+    
+    def test_builtins(self):
+        # Setup
+
+        intspec = implementedBy(int)
+        olddeclared = intspec.declared
+                
+        classImplements(int, I1)
+        class myint(int):
+            implements(I2)
+
+"""
+
+edge_cases_target = """
+class Test(unittest.TestCase):
+
+    # Note that most of the tests are in the doc strings of the
+    # declarations module.
+    
+    def test_builtins(self):
+        # Setup
+
+        intspec = implementedBy(int)
+        olddeclared = intspec.declared
+                
+        classImplements(int, I1)
+        @implementer(I2)
+        class myint(int):
+            pass
+
+"""
+
 class FixerTest(unittest.TestCase):
     
     def setUp(self):
@@ -275,4 +314,6 @@ class FixerTest(unittest.TestCase):
 
     def test_indented_class(self):
         self._test(indented_class_source, indented_class_target)
-        
+
+    def test_edge_cases(self):
+        self._test(edge_cases_source, edge_cases_target)
