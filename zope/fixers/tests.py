@@ -287,11 +287,8 @@ class Test(unittest.TestCase):
 
 class FixerTest(unittest.TestCase):
     
-    def setUp(self):
-        self.tool = RefactoringTool(['zope.fixers.fix_implements'])
-    
     def _test(self, source, target):
-        refactored = str(self.tool.refactor_string(source, 'zope.fixer.test'))
+        refactored = str(self.refactor(source, 'zope.fixer.test'))
         if refactored != target:
             match = ''
             for i in range(min(len(refactored), len(target))):
@@ -311,8 +308,8 @@ class FixerTest(unittest.TestCase):
 class ImplementsFixerTest(FixerTest):
     
     def setUp(self):
-        self.tool = RefactoringTool(['zope.fixers.fix_implements'])
-        
+        self.refactor = RefactoringTool(['zope.fixers.fix_implements']).refactor_string
+            
     def test_imports(self):
         self._test(imports_source, imports_target)
 
@@ -370,11 +367,12 @@ class Foo:
 class ImplementsOnlyFixerTest(FixerTest):
     
     def setUp(self):
-        self.tool = RefactoringTool(['zope.fixers.fix_implements_only'])
+        self.refactor = RefactoringTool(['zope.fixers.fix_implements_only']).refactor_string
+    
 
-    #def test_implements_only(self):
-        #self._test(implements_only_source, implements_only_target)
-
+    def test_implements_only(self):
+        self._test(implements_only_source, implements_only_target)
+        
 doctest_source = """
     >>> class A(object):
     ...     implements(I1)
@@ -393,28 +391,34 @@ doctest_target = """
     ...     pass
 """
 
-class DoctestFixerTest(unittest.TestCase):
-        
-    def _test(self, source, target):
-        refactored = str(self.tool.refactor_docstring(source, 'zope.fixer.test'))
-        if refactored != target:
-            match = ''
-            for i in range(min(len(refactored), len(target))):
-                if refactored[i] == target[i]:
-                    match += refactored[i]
-                else:
-                    break
-            msg = "\nResult:\n" + refactored
-            msg += "\nFailed:\n" + refactored[i:]
-            msg += "\nTarget:\n" + target[i:]
-            # Make spaces and tabs visible:
-            msg = msg.replace(' ', '°')
-            msg = msg.replace('\t', '------->')
-            msg = ("Test failed at character %i" % i) + msg
-            self.fail(msg)
-            
+class DoctestFixerTest(FixerTest):
+                    
     def setUp(self):
-        self.tool = RefactoringTool(['zope.fixers.fix_implements'])
+        self.refactor = RefactoringTool(['zope.fixers.fix_implements']).refactor_docstring
         
     def test_doctest(self):
         self._test(doctest_source, doctest_target)
+
+dual_fixes_source = """
+      >>> class C(object):
+      ...     implements(IFoo)
+      ...     classProvides(IFooFactory)      
+"""
+
+dual_fixes_target = """
+      >>> @provider(IFooFactory)
+      ... @implementer(IFoo)
+      ... class C(object):
+      ...     pass
+"""
+
+class DualFixersTest(FixerTest):
+    
+    def setUp(self):
+        self.refactor = RefactoringTool(['zope.fixers.fix_implements',
+                                         'zope.fixers.fix_class_provides']
+                                        ).refactor_docstring
+        
+    def test_dualfixers(self):
+        self._test(dual_fixes_source, dual_fixes_target)
+    

@@ -39,7 +39,9 @@ class Function2DecoratorBase(BaseFix):
     """
     
     CLASS_PATTERN = """
-    classdef< 'class' any* ':' suite< any* simple_stmt< power< statement=(%s) trailer < '(' interface=any ')' > any* > any* > any* > >
+    decorated< decorator <any* > classdef< 'class' any* ':' suite< any* simple_stmt< power< statement=(%(match)s) trailer < '(' interface=any ')' > any* > any* > any* > > >
+    |
+    classdef< 'class' any* ':' suite< any* simple_stmt< power< statement=(%(match)s) trailer < '(' interface=any ')' > any* > any* > any* > >
     """
 
     FUNCTION_PATTERN = """
@@ -69,7 +71,7 @@ class Function2DecoratorBase(BaseFix):
     
     def _add_pattern(self, match):
             self.class_patterns.append(PatternCompiler().compile_pattern(
-                self.CLASS_PATTERN % match))
+                self.CLASS_PATTERN % {'match': match}))
             self.function_patterns.append(PatternCompiler().compile_pattern(
                 self.FUNCTION_PATTERN % match))
         
@@ -81,11 +83,6 @@ class Function2DecoratorBase(BaseFix):
 
         # Now match classes on all import variants found:
         for pattern in self.class_patterns:
-            if pattern.match(node, results):
-                return results
-
-        # And lastly on all actual calls to the function:
-        for pattern in self.function_patterns:
             if pattern.match(node, results):
                 return results
                 
@@ -131,7 +128,6 @@ class Function2DecoratorBase(BaseFix):
                 
             # Take the current class constructor prefix, and stick it into
             # the decorator, to set the decorators indentation.
-            #import pdb;pdb.set_trace()
             nodeprefix = node.get_prefix()
             decorator.set_prefix(nodeprefix)
             # Preserve only the indent:
@@ -153,18 +149,16 @@ class Function2DecoratorBase(BaseFix):
             if not prefix or prefix[0] != '\n':
                 prefix = '\n' + prefix
             node.set_prefix(prefix)
-            node.insert_child(0, decorator)
-            
-        if 'old_statement' in results:
-            # This matched an function statement. We'll remove it.
-            self.fixups.append(node)
-    
-    def finish_tree(self, tree, filename):
-        for node in self.fixups:
-            parent = node.parent
-            node.remove()
-            if not str(parent).strip():
-                # This is an empty class. Stick in a pass
-                parent.insert_child(2, Leaf(0, 'pass'))
-                parent.insert_child(3, Leaf(0, '\n'))
-                
+            new_node = Node(syms.decorated, [decorator, node.clone()])
+            # Look for the actual function calls in the new node and remove it.
+            for node in new_node.post_order():
+                for pattern in self.function_patterns:
+                    if pattern.match(node, results):
+                        parent = node.parent
+                        node.remove()
+                        if not str(parent).strip():
+                            # This is an empty class. Stick in a pass
+                            parent.insert_child(2, Leaf(0, 'pass'))
+                            parent.insert_child(3, Leaf(0, '\n'))
+            return new_node
+                    
