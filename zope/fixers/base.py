@@ -155,10 +155,24 @@ class Function2DecoratorBase(BaseFix):
                 for pattern in self.function_patterns:
                     if pattern.match(node, results):
                         parent = node.parent
+                        previous = node.get_prev_sibling()
+                        # Remove the node
                         node.remove()
                         if not str(parent).strip():
                             # This is an empty class. Stick in a pass
-                            parent.insert_child(2, Leaf(0, 'pass'))
+                            if (len(parent.children) < 3 or 
+                                ' ' in parent.children[2].value):
+                                # This class had no body whitespace.
+                                parent.insert_child(2, Leaf(0, '    pass'))
+                            else:
+                                # This class had body whitespace already.
+                                parent.insert_child(2, Leaf(0, 'pass'))
                             parent.insert_child(3, Leaf(0, '\n'))
+                        elif (prefix and isinstance(previous, Leaf) and
+                            '\n' not in previous.value and
+                            previous.value.strip() == ''):
+                            # This is just whitespace, remove it:
+                            previous.remove()
+
             return new_node
                     

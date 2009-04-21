@@ -379,6 +379,12 @@ doctest_source = """
 
     >>> class B(object):
     ...     implements(I2)
+    
+    >>> class Foo(object):
+    ...     implements(IFoo)
+    ...     x = 1
+    ...     def __init__(self):
+    ...         self.y = 2
 """
 
 doctest_target = """
@@ -389,6 +395,12 @@ doctest_target = """
     >>> @implementer(I2)
     ... class B(object):
     ...     pass
+    
+    >>> @implementer(IFoo)
+    ... class Foo(object):
+    ...     x = 1
+    ...     def __init__(self):
+    ...         self.y = 2
 """
 
 class DoctestFixerTest(FixerTest):
