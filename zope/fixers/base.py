@@ -90,7 +90,7 @@ class Function2DecoratorBase(BaseFix):
         if 'name' in results:
             # This matched an import statement. Fix that up:
             name = results["name"]
-            name.replace(Name(self.DECORATOR_NAME, prefix=name.get_prefix()))
+            name.replace(Name(self.DECORATOR_NAME, prefix=name.prefix))
         if 'rename' in results:
             # The import statement use import as
             self._add_pattern("'%s'" % results['rename'].value)
@@ -128,8 +128,8 @@ class Function2DecoratorBase(BaseFix):
                 
             # Take the current class constructor prefix, and stick it into
             # the decorator, to set the decorators indentation.
-            nodeprefix = node.get_prefix()
-            decorator.set_prefix(nodeprefix)
+            nodeprefix = node.prefix
+            decorator.prefix = nodeprefix
             # Preserve only the indent:
             if '\n' in nodeprefix:
                 nodeprefix = nodeprefix[nodeprefix.rfind('\n')+1:]
@@ -137,7 +137,7 @@ class Function2DecoratorBase(BaseFix):
             # Then find the last line of the previous node and use that as
             # indentation, and add that to the class constructors prefix.
                 
-            previous = node.get_prev_sibling()
+            previous = node.prev_sibling
             if previous is None:
                 prefix = ''
             else:
@@ -148,14 +148,14 @@ class Function2DecoratorBase(BaseFix):
                 
             if not prefix or prefix[0] != '\n':
                 prefix = '\n' + prefix
-            node.set_prefix(prefix)
+            node.prefix = prefix
             new_node = Node(syms.decorated, [decorator, node.clone()])
             # Look for the actual function calls in the new node and remove it.
             for node in new_node.post_order():
                 for pattern in self.function_patterns:
                     if pattern.match(node, results):
                         parent = node.parent
-                        previous = node.get_prev_sibling()
+                        previous = node.prev_sibling
                         # Remove the node
                         node.remove()
                         if not str(parent).strip():
