@@ -14,8 +14,28 @@ zope.fixers requires Python 3.1.
 Usage
 -----
 
-To use this you typically want all teh fixers from lib2to3, and add the
-fixers from zope.fixers to it. Like so:
+Typically you will use zope.fixers together with Distribute's 2to3 support.
+This is done by adding zope.fixers to some parameters in setup():
+
+    >>> setup(
+    ...     install_requires = ['zope.fixers'],
+    ...     use_2to3 = True,
+    ...     use_2to3_fixers = ['zope.fixers'],
+    ... )
+    
+For an example usage of a complex case, look at:
+
+    http://svn.zope.org/zope.interface/branches/regebro-python3/setup.py?rev=106216&view=markup
+
+That setup.py supports both distutils, setuptools and distribute, all versions
+of python from 2.4 to 3.1, and has an optional C-extension, so don't worry if
+it's overwhelming. For simple projects all you need is to use Distribute and
+add the above three lines to the setup.py. Distribute has more documentation
+on how to use it to support Python 3 porting.
+
+
+If you don't want to use Distribute things get a bit more complex, as you have
+to make the list of fixers yourself and call lib2to3 with that:
 
     >>> from lib2to3.refactor import RefactoringTool, get_fixers_from_package
     >>> fixers = get_fixers_from_package('lib2to3.fixes') + \
@@ -25,8 +45,3 @@ And the run the fixing with the fixers:
 
     >>> tool = RefactoringTool(fixers)
     >>> tool.refactor(files, write=True)
-
-For an example usage within setuptools, look at:
-
-http://svn.zope.org/zope.interface/branches/regebro-python3/build_ext_3.py?rev=98993&view=markup
-
