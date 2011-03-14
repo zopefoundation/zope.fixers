@@ -8,8 +8,6 @@ all uses of implements(IFoo) in a class body to the class decorator
 @implementer(IFoo), which is the most likely Python 3 syntax for 
 zope.interfaces implements statements.
 
-zope.fixers requires Python 3.1.
-
 
 Usage
 -----
