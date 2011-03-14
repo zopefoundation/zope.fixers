@@ -29,7 +29,11 @@ setup(name='zope.fixers',
       # Get more strings from http://www.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.1",
+        "Programming Language :: Python :: 3.2",
         "Topic :: Software Development :: Libraries :: Python Modules",
+
         ],
       keywords='2to3 python3 zope',
       author='Lennart Regebro',
