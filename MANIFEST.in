@@ -1,0 +1,8 @@
+include *.txt
+include bootstrap.py
+include buildout.cfg
+
+recursive-include zope *
+recursive-include docs *
+
+global-exclude *.pyc

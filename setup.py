@@ -12,21 +12,15 @@
 #
 ##############################################################################
 """Setup for zope.fixers package
-
-$Id$
 """
-
 from setuptools import setup, find_packages
 import os
 
-version = '1.0'
-
 setup(name='zope.fixers',
-      version=version,
+      version='1.1.0dev',
       description="2to3 fixers for Zope",
       long_description=open("README.txt").read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
-      # Get more strings from http://www.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
@@ -48,7 +42,8 @@ setup(name='zope.fixers',
           'setuptools',
       ],
       entry_points="""
-      # -*- Entry points: -*-
+      [console_scripts]
+      zope-2to3 = zope.fixers.main:main
       """,
       test_suite = 'zope.fixers.tests',
       )

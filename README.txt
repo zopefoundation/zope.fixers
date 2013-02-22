@@ -5,7 +5,7 @@ Fixers for Zope Component Architecture and the frameworks built with it.
 
 Currently, there is only one fixer, fix_implements. This fixer will change
 all uses of implements(IFoo) in a class body to the class decorator
-@implementer(IFoo), which is the most likely Python 3 syntax for 
+@implementer(IFoo), which is the most likely Python 3 syntax for
 zope.interfaces implements statements.
 
 
@@ -20,7 +20,7 @@ This is done by adding zope.fixers to some parameters in setup():
     ...     use_2to3 = True,
     ...     use_2to3_fixers = ['zope.fixers'],
     ... )
-    
+
 For an example usage of a complex case, look at:
 
     http://svn.zope.org/zope.interface/branches/regebro-python3/setup.py?rev=106216&view=markup
@@ -43,3 +43,10 @@ And the run the fixing with the fixers:
 
     >>> tool = RefactoringTool(fixers)
     >>> tool.refactor(files, write=True)
+
+
+Fixer Script
+------------
+
+The package also provides a console script called `zope-2to3` that has the
+same arguments as `2to3` but applies the fixers defined in this package.

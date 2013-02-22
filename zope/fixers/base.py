@@ -12,8 +12,6 @@
 #
 ##############################################################################
 """Fixer for class interface declarations to class decorators
-
-$Id$
 """
 
 # Local imports
@@ -37,7 +35,7 @@ class Function2DecoratorBase(BaseFix):
     |
     import_from< 'from' 'zope' 'import' import_as_name< 'interface' 'as' interface_rename=(any) > >
     """
-    
+
     CLASS_PATTERN = """
     decorated< decorator <any* > classdef< 'class' any* ':' suite< any* simple_stmt< power< statement=(%(match)s) trailer < '(' interface=any ')' > any* > any* > any* > > >
     |
@@ -47,7 +45,7 @@ class Function2DecoratorBase(BaseFix):
     FUNCTION_PATTERN = """
     simple_stmt< power< old_statement=(%s) trailer < '(' any* ')' > > any* >
     """
-    
+
     def should_skip(self, node):
         module = str(node)
         return not ('zope' in module and 'interface' in module)
@@ -56,7 +54,7 @@ class Function2DecoratorBase(BaseFix):
         # Compile the import pattern.
         self.named_import_pattern = PatternCompiler().compile_pattern(
             self.IMPORT_PATTERN % {'function_name': self.FUNCTION_NAME})
-        
+
     def start_tree(self, tree, filename):
         # Compile the basic class/function matches. This is done per tree,
         # as further matches (based on what imports there are) also are done
@@ -68,13 +66,13 @@ class Function2DecoratorBase(BaseFix):
         self._add_pattern("'%s'" % self.FUNCTION_NAME)
         self._add_pattern("'interface' trailer< '.' '%s' >" % self.FUNCTION_NAME)
         self._add_pattern("'zope' trailer< '.' 'interface' > trailer< '.' '%s' >" % self.FUNCTION_NAME)
-    
+
     def _add_pattern(self, match):
             self.class_patterns.append(PatternCompiler().compile_pattern(
                 self.CLASS_PATTERN % {'match': match}))
             self.function_patterns.append(PatternCompiler().compile_pattern(
                 self.FUNCTION_PATTERN % match))
-        
+
     def match(self, node):
         # Matches up the imports
         results = {"node": node}
@@ -85,7 +83,7 @@ class Function2DecoratorBase(BaseFix):
         for pattern in self.class_patterns:
             if pattern.match(node, results):
                 return results
-                
+
     def transform(self, node, results):
         if 'name' in results:
             # This matched an import statement. Fix that up:
@@ -101,7 +99,7 @@ class Function2DecoratorBase(BaseFix):
             # This matched a class that has an <FUNCTION_NAME>(IFoo) statement.
             # We must convert that statement to a class decorator
             # and put it before the class definition.
-            
+
             statement = results['statement']
             if not isinstance(statement, list):
                 statement = [statement]
@@ -116,7 +114,7 @@ class Function2DecoratorBase(BaseFix):
                 func = statement[-1]
             if func.value == self.FUNCTION_NAME:
                 func.value = self.DECORATOR_NAME
-            
+
             interface = results['interface']
             if not isinstance(interface, list):
                 interface = [interface]
@@ -125,7 +123,7 @@ class Function2DecoratorBase(BaseFix):
             # Create the decorator:
             decorator = Node(syms.decorator, [Leaf(50, '@'),] + statement +
                              [Leaf(7, '(')] + interface + [Leaf(8, ')')])
-                
+
             # Take the current class constructor prefix, and stick it into
             # the decorator, to set the decorators indentation.
             nodeprefix = node.prefix
@@ -133,10 +131,10 @@ class Function2DecoratorBase(BaseFix):
             # Preserve only the indent:
             if '\n' in nodeprefix:
                 nodeprefix = nodeprefix[nodeprefix.rfind('\n')+1:]
-            
+
             # Then find the last line of the previous node and use that as
             # indentation, and add that to the class constructors prefix.
-                
+
             previous = node.prev_sibling
             if previous is None:
                 prefix = ''
@@ -145,7 +143,7 @@ class Function2DecoratorBase(BaseFix):
             if '\n' in prefix:
                 prefix = prefix[prefix.rfind('\n')+1:]
             prefix = prefix + nodeprefix
-                
+
             if not prefix or prefix[0] != '\n':
                 prefix = '\n' + prefix
             node.prefix = prefix
@@ -160,7 +158,7 @@ class Function2DecoratorBase(BaseFix):
                         node.remove()
                         if not str(parent).strip():
                             # This is an empty class. Stick in a pass
-                            if (len(parent.children) < 3 or 
+                            if (len(parent.children) < 3 or
                                 ' ' in parent.children[2].value):
                                 # This class had no body whitespace.
                                 parent.insert_child(2, Leaf(0, '    pass'))
@@ -175,4 +173,4 @@ class Function2DecoratorBase(BaseFix):
                             previous.remove()
 
             return new_node
-                    
+

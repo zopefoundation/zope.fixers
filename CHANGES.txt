@@ -1,9 +1,13 @@
 CHANGES
 *******
 
+1.1.0 (unreleased)
 ==================
+
+- Added console script ``zope-2to3``.
+
 1.0.0 (2009-09-12)
 ==================
 
-Initial release. Includes the implements fix to change implements(IFoo) 
-class body call to @implementer(IFoo) class decorator.
+- Initial release. Includes the implements fix to change implements(IFoo)
+  class body call to ``@implementer(IFoo)`` class decorator.
