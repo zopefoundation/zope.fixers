@@ -1,24 +1,23 @@
 CHANGES
-*******
+=======
 
 1.1.2 (unreleased)
-==================
+------------------
 
-- Nothing changed yet.
-
+- Removed setup.cfg and make sure that we point to real Change Log.
 
 1.1.1 (2013-02-23)
-==================
+------------------
 
 - Remove support for Python 2.7 again. It did not work.
 
 1.1.0 (2013-02-22)
-==================
+------------------
 
 - Added console script ``zope-2to3``.
 
 1.0.0 (2009-09-12)
-==================
+------------------
 
 - Initial release. Includes the implements fix to change implements(IFoo)
   class body call to ``@implementer(IFoo)`` class decorator.

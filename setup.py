@@ -20,7 +20,7 @@ setup(name='zope.fixers',
       version='1.1.2.dev0',
       description="2to3 fixers for Zope",
       long_description=open("README.txt").read() + "\n" +
-                       open(os.path.join("docs", "HISTORY.txt")).read(),
+                       open("CHANGES.txt").read(),
       classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
