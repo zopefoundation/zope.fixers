@@ -17,7 +17,7 @@ from setuptools import setup, find_packages
 import os
 
 setup(name='zope.fixers',
-      version='1.1.2',
+      version='1.1.3.dev0',
       description="2to3 fixers for Zope",
       long_description=open("README.txt").read() + "\n" +
                        open("CHANGES.txt").read(),
