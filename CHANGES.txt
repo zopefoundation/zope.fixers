@@ -1,7 +1,7 @@
 CHANGES
 *******
 
-1.1.1 (unreleased)
+1.1.1 (2013-02-23)
 ==================
 
 - Remove support for Python 2.7 again. It did not work.
