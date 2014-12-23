@@ -7,3 +7,4 @@ bin
 build
 develop-eggs
 dist
+.tox
